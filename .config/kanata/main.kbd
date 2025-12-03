@@ -9,24 +9,48 @@
   ;; Return to main
   main (layer-switch main)
   ;; Symbols and navigation
-  prog (one-shot-press 2500 (layer-while-held programmer))
+  prog (one-shot-press 2500 (layer-while-held alt-1))
+  prg2 (one-shot-press 2500 (layer-while-held alt-2))
+  back (release-layer alt-2)
   ;; Mouse controls
   mse (layer-switch mouse)
   ;; Toggle mouse controls
-  tgms (tap-hold 0 250 grv (layer-while-held mouse))
+  tgms (layer-while-held mouse)
+  ;; Miscellaneous layer
+  misc (one-shot-press 5000 (layer-while-held misc))
   ;; Colemak-DH layout
-  cole (on-press toggle-virtualkey vcole)
+  cole (switch
+    ((base-layer colemak-dh)) (layer-switch main) break
+    () (layer-switch colemak-dh) break
+  )
   ;; Capslock triple-tap for real capslock
   rcap (tap-dance 200 (@prog caps))
+
+  ;; Create a new line under the current line
+  ;; equivalent to pressing end followed by return
+  nret (multi end ret)
+
+  ;; Mouse movements with acceleration
+  󰍽 (movemouse-accel-up 12 1200 1 10)
+  󰍽 (movemouse-accel-down 12 1200 1 10)
+  󰍽 (movemouse-accel-left 12 1200 1 10)
+  󰍽 (movemouse-accel-right 12 1200 1 10)
+  ;; Fast mouse (speeds up mouse while pressed)
+  fmse (movemouse-speed 500)
+  ;; Mouse wheel
+  󰍽󰄿 (mwheel-up 5 7)
+  󰍽󰄼 (mwheel-down 5 7)
+  󰍽󰄽 (mwheel-left 5 7)
+  󰍽󰄾 (mwheel-right 5 7)
 )
 
 (defsrc
-  esc  f1   f2   f3   f4   f5   f6   f7   f8   f9   f10  f11  f12  slck prnt brk
+  esc  f1   f2   f3   f4   f5   f6   f7   f8   f9   f10  f11  f12  brk  del
   grv  1    2    3    4    5    6    7    8    9    0    -    =    bspc
   tab  q    w    e    r    t    y    u    i    o    p    [    ]    \
   caps a    s    d    f    g    h    j    k    l    ;    '    ret
-  lsft z    x    c    v    b    n    m    ,    .    /    rsft
-  lctl      lmet lalt          spc        ralt menu rctl
+  lsft z    x    c    v    b    n    m    ,    .    /
+  lctl lmet lalt spc
 )
 
 (deflayermap main
@@ -35,54 +59,49 @@
   [ bspc
   ] del
   brk pp
-  prnt (multi met sft s)
+  - (fork (fork vold mute (lsft rsft)) A-- (lalt ralt))
+  = (fork volu A-= (lalt ralt))
 )
 
-(defvirtualkeys
-  vcole (layer-while-held colemak-dh)
+(deflayer alt-1
+  _     _     _     _   _   _   _    _   _   _   _   _   _  _  _
+  XX    _     _     _   _   _   _    _   _   _   _   _   _  _
+  _     XX    @misc [   ]   XX  /    +   =   -   S-8 _   _  @cole
+  @rcap @prg2 @mse  S-9 S-0 S-- ◀    ▼   ▲   ▶   _   S-5 @nret
+  _     XX    XX    S-2 S-7 S-6 home end S-/ S-1 XX
+  _ _ _ lctl
 )
 
-(defalias
-  ;; Create a new line under the current line
-  ;; equivalent to pressing end followed by return
-  nret (multi end ret)
-  ;; Mouse movements with acceleration
-  mmau (movemouse-accel-up 12 1200 1 10)
-  mmad (movemouse-accel-down 12 1200 1 10)
-  mmal (movemouse-accel-left 12 1200 1 10)
-  mmar (movemouse-accel-right 12 1200 1 10)
-  ;; Fast mouse (speeds up mouse while pressed)
-  fmse (movemouse-speed 500)
-  ;; Mouse wheel
-  mwu (mwheel-up 5 7)
-  mwd (mwheel-down 5 7)
-  mwl (mwheel-left 5 7)
-  mwr (mwheel-right 5 7)
-)
-
-(deflayer programmer
-  _     _    _    _    _   _   _    _   _    _    _   _    _     _     _    _
-  XX    _    _    _    _   _   _    _   _    _    _   XX   XX    XX
-  _     XX   XX   [    ]   S-, S-.  +   =    -    S-8 _    _     @cole
-  @rcap lsft @mse S-9  S-0 S-- ◀    ▼   ▲    ▶    ;   XX   @nret
-  _     XX   XX   S-[  S-] S-6 home end pgup pgdn XX  _
-  _          _    _         lctl        _    _    _
+(deflayer alt-2
+  _     _     _  _   _   _   _      _     _   _   _   _   _  _  _
+  _     _     _  _   _   _   _      _     _   _   _   _   _  _
+  _     XX    XX S-[ S-] XX  \      S-,   _   S-. S-\ _   _  @cole
+  @back @back XX S-` `   XX  S-◀    S-▼   S-▲ S-▶ _   S-4 @nret
+  _     XX    XX XX  XX  S-3 S-home S-end _   _   XX
+  _ _ _ _
 )
 
 (deflayer mouse
-  @main _     _     _     _     _     _     _     _     _     _     _     _     _     _     _
-  _     mrgt  mmid  mlft  _     _     _     _     _     _     _     _     _     _
-  _     @main _     @fmse _     _     @mwl  @mwd  @mwu  @mwr  _     _     _     _
-  @fmse _     mrgt  mmid  mlft  _     @mmal @mmad @mmau @mmar _     _     _
-  _     _     _     _     _     _     _     _     _     _     _     _
-  _           _     _            @fmse            _     _     _
+  @main _     _    _     _    _  _   _   _   _   _  _  _  _  _
+  _     mrgt  mmid mlft  _    _  _   _   _   _   _  _  _  _
+  _     @main _    @fmse _    _  @󰍽󰄽 @󰍽󰄼 @󰍽󰄿 @󰍽󰄾 _  _  _  _
+  @fmse _     mrgt mmid  mlft _  @󰍽 @󰍽 @󰍽 @󰍽 _  _  _
+  _     _     _    _     _    _  _   _   _   _   _
+  _ _ _ @fmse
+)
+
+(deflayermap misc
+  esc @main
+  l (unicode λ)
+  e (unicode ε)
+  s (macro (unicode ¯) \ S-- S-9 (unicode ツ) S-0 S-- / (unicode ¯))
 )
 
 (deflayer colemak-dh
-  _     _   _   _   _   _   _   _   _   _   _   _   _   _   _   _
-  _     _   _   _   _   _   _   _   _   _   _   _   _   _
-  _     q   w   f   p   b   j   l   u   y   ;   _   _   _
-  @prog a   r   s   t   g   m   n   e   i   o   _   _
-  _     x   c   d   v   z   k   h   _   _   _   _
-  _         _   _         _         _   _   _
+  _  _  _  _  _  _  _  _  _  _  _  _  _  _  _
+  _  _  _  _  _  _  _  _  _  _  _  _  _  _
+  _  q  w  f  p  b  j  l  u  y  ;  _  _  _
+  _  a  r  s  t  g  m  n  e  i  o  _  _
+  _  x  c  d  v  z  k  h  _  _  _
+  _ _ _ _
 )
